@@ -76,7 +76,7 @@ vehicles
    └── incidents
            │
            └── stop_resequence_results
-
+'''
 
 Key data stored:
 
@@ -88,7 +88,7 @@ Key data stored:
 | incidents | Traffic, breakdown, or delay events |
 | stop_resequence_results | Optimized route sequence |
 
-'''
+
 
 ---
 
