@@ -8,11 +8,10 @@ The backend system processes vehicle telemetry data, detects delivery incidents,
 The overall data flow is:
 
 1. Vehicles collect telemetry data (GPS, speed, engine status).
-2. Data is uploaded to the cloud through a **5G connection**.
-3. **AWS API Gateway + Lambda** ingest the telemetry data.
-4. Events are processed and stored in **PostgreSQL/PostGIS**.
-5. If an incident impacts delivery ETA, the **Routing Engine (OSRM)** recalculates the route.
-6. Updated routes and ETA are pushed to the **mobile app / dispatcher dashboard**.
+2. **AWS API Gateway + Lambda** ingest the telemetry data.
+3. Events are processed and stored in **PostgreSQL/PostGIS**.
+4. If an incident impacts delivery ETA, the **Routing Engine (OSRM)** recalculates the route.
+5. Updated routes and ETA are pushed to the **mobile app / dispatcher dashboard**.
 
 Key technologies used:
 
@@ -27,45 +26,11 @@ This system collects vehicle telemetry, detects incidents using lightweight rule
 
 ---
 
-# Project Structure
-
-backend/
-│
-├── ingestion/
-│   ├── lambda_handler.py
-│   └── db.py
-│
-├── event_processor/
-│   ├── processor.py
-│   └── eta_calculator.py
-│
-├── routing_engine/
-│   ├── routing_client.py
-│   └── reroute_logic.py
-│
-├── database/
-│   ├── schema.sql
-│   └── seed_data.sql
-│
-├── api/
-│   ├── routes.py
-│   └── websocket_push.py
-│
-├── utils/
-│   ├── redis_cache.py
-│   └── helpers.py
-│
-├── config/
-│   └── settings.py
-│
-└── requirements.txt
-
-
 ### Main Modules
 
 **Ingestion Service**
 
-- Receives telemetry data from vehicles
+- Receives telemetry data from vehicles simulator
 - Validates payload
 - Stores raw incidents in the database
 
@@ -83,7 +48,7 @@ backend/
 
 **Notification Service**
 
-- Sends route updates and alerts to the frontend via WebSocket
+- Sends route updates and alerts to the frontend via HTTP API
 
 ---
 
@@ -101,6 +66,7 @@ Core tables:
 
 Example schema relationships:
 
+'''
 vehicles
    │
    ├── delivery_plans
@@ -122,7 +88,10 @@ Key data stored:
 | incidents | Traffic, breakdown, or delay events |
 | stop_resequence_results | Optimized route sequence |
 
+'''
+
 ---
+
 
 # Setup and Installation
 
@@ -133,10 +102,6 @@ git clone https://github.com/your-repo/project-name.git
 cd backend
 
 ## 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
 
 Main dependencies:
 
