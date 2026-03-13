@@ -1,1 +1,278 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Z_kNVedj)
+# Backend
+
+## Backend Architecture
+
+The backend system processes vehicle telemetry data, detects delivery incidents, and dynamically recalculates delivery routes to reduce delays.
+
+The overall data flow is:
+
+1. Vehicles collect telemetry data (GPS, speed, engine status).
+2. Data is uploaded to the cloud through a **5G connection**.
+3. **AWS API Gateway + Lambda** ingest the telemetry data.
+4. Events are processed and stored in **PostgreSQL/PostGIS**.
+5. If an incident impacts delivery ETA, the **Routing Engine (OSRM)** recalculates the route.
+6. Updated routes and ETA are pushed to the **mobile app / dispatcher dashboard**.
+
+Key technologies used:
+
+- AWS Lambda
+- AWS API Gateway
+- PostgreSQL + PostGIS
+- Redis (real-time cache)
+- OSRM routing engine
+- WebSocket API for live updates
+
+This system collects vehicle telemetry, detects incidents using lightweight rule-based logic, processes events in the cloud, dynamically re-routes vehicles using a routing engine, and pushes updates back to drivers and dispatchers in near real time.
+
+---
+
+# Project Structure
+
+backend/
+│
+├── ingestion/
+│   ├── lambda_handler.py
+│   └── db.py
+│
+├── event_processor/
+│   ├── processor.py
+│   └── eta_calculator.py
+│
+├── routing_engine/
+│   ├── routing_client.py
+│   └── reroute_logic.py
+│
+├── database/
+│   ├── schema.sql
+│   └── seed_data.sql
+│
+├── api/
+│   ├── routes.py
+│   └── websocket_push.py
+│
+├── utils/
+│   ├── redis_cache.py
+│   └── helpers.py
+│
+├── config/
+│   └── settings.py
+│
+└── requirements.txt
+
+
+### Main Modules
+
+**Ingestion Service**
+
+- Receives telemetry data from vehicles
+- Validates payload
+- Stores raw incidents in the database
+
+**Event Processor**
+
+- Analyzes incoming events
+- Calculates ETA impact
+- Determines whether rerouting is needed
+
+**Routing Engine**
+
+- Calls OSRM routing service
+- Computes optimized delivery sequence
+- Returns updated route and ETA
+
+**Notification Service**
+
+- Sends route updates and alerts to the frontend via WebSocket
+
+---
+
+# Database Design
+
+The backend uses **PostgreSQL with PostGIS** to support spatial queries.
+
+Core tables:
+
+- `vehicles`
+- `delivery_plans`
+- `delivery_stops`
+- `incidents`
+- `stop_resequence_results`
+
+Example schema relationships:
+
+vehicles
+   │
+   ├── delivery_plans
+   │       │
+   │       └── delivery_stops
+   │
+   └── incidents
+           │
+           └── stop_resequence_results
+
+
+Key data stored:
+
+| Table | Purpose |
+|------|------|
+| vehicles | Vehicle status and latest location |
+| delivery_plans | Delivery schedules |
+| delivery_stops | Stop order and ETA windows |
+| incidents | Traffic, breakdown, or delay events |
+| stop_resequence_results | Optimized route sequence |
+
+---
+
+# Setup and Installation
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/your-repo/project-name.git
+cd backend
+
+## 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Main dependencies:
+
+- psycopg2  
+- redis  
+- requests  
+- fastapi  
+- uvicorn  
+
+---
+
+## 3. Configure Environment Variables
+
+Create a `.env` file.
+
+```env
+DB_HOST=xxxx
+DB_PORT=5432
+DB_NAME=delivery_demo
+DB_USER=postgres
+DB_PASSWORD=password
+
+REDIS_HOST=xxxx
+REDIS_PORT=6379
+
+ROUTING_ENGINE_URL=http://localhost:5000
+```
+
+---
+
+## 4. Initialize Database
+
+Run the schema:
+
+```bash
+psql -U postgres -d delivery_demo -f database/schema.sql
+```
+
+Optional seed data:
+
+```bash
+psql -U postgres -d delivery_demo -f database/seed_data.sql
+```
+
+---
+
+# Running the Backend
+
+Start the API server:
+
+```bash
+uvicorn api.routes:app --reload
+```
+
+Server will start at:
+
+```
+http://localhost:8000
+```
+
+---
+
+# Testing the System
+
+You can simulate telemetry data using **curl** or **Postman**.
+
+Example request:
+
+```bash
+curl -X POST http://localhost:8000/ingest \
+-H "Content-Type: application/json" \
+-d '{
+  "vehicle_id": "vehicle_001",
+  "timestamp": "2026-03-01T10:00:00Z",
+  "location": {
+    "lat": 47.6062,
+    "lon": -122.3321
+  },
+  "event_type": "TRAFFIC_JAM",
+  "GPS_speed": 1.5,
+  "CAN_speed": 1.2
+}'
+```
+
+---
+
+# Expected System Behavior
+
+After executing the system:
+
+1. Telemetry data is ingested and stored in the database.
+
+2. The event processor evaluates whether the event impacts delivery ETA.
+
+3. If ETA impact exceeds the threshold:
+
+```
+ETA_delta / ETA_current > 10%
+```
+
+the system triggers the routing engine.
+
+4. The routing engine calculates:
+
+- new delivery sequence  
+- updated ETA  
+- optimized route polyline  
+
+5. The results are stored in:
+
+```
+stop_resequence_results
+```
+
+6. Updated route information is pushed to the frontend dashboard.
+
+The frontend can retrieve:
+
+- vehicle location  
+- incident type  
+- severity  
+- suggested route  
+- updated ETA  
+
+---
+
+# Demo Notes
+
+For the demo environment:
+
+- Some telemetry data is simulated  
+- OSRM routing runs locally or on EC2  
+- Vehicle telemetry is generated by a simulator rather than real vehicles  
+
+This allows safe testing of the full pipeline:
+
+```
+incident detection → ETA analysis → route optimization → real-time updates
+```
