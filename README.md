@@ -66,7 +66,7 @@ Core tables:
 
 Example schema relationships:
 
-'''
+```
 vehicles
    │
    ├── delivery_plans
@@ -76,7 +76,7 @@ vehicles
    └── incidents
            │
            └── stop_resequence_results
-'''
+```
 
 Key data stored:
 
