@@ -1,11 +1,13 @@
 # Fleeton - Real-Time Delivery Rerouting System
 
 Fleeton is an end-to-end delivery optimization system that detects delivery exceptions from real-time vehicle data and dynamically recalculates delivery routes to reduce delays and improve ETA reliability.
+
 Demo Video (Driver App): https://drive.google.com/file/d/1ghwebSchtv4rxntxQVIZpPucUUGPIbPV/view?usp=sharing
 
 ## System Architecture
 
 <img width="707" height="372" alt="image" src="https://github.com/user-attachments/assets/76d14bee-9386-4499-8122-c416fbb98cda" />
+
 - Backend: responsible for vehicle data ingestion, event detection, ETA impact analysis, and dynamic route recalculation.
 - Frontend: driver-facing application for real-time vehicle location, task list, alerts, and rerouting decisions.
 - Backend and Frontend communicate through HTTP APIs and long-polling.
