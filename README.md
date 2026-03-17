@@ -2,7 +2,8 @@
 
 Fleeton is an end-to-end delivery optimization system that detects delivery exceptions from real-time vehicle data and dynamically recalculates delivery routes to reduce delays and improve ETA reliability.
 
-Demo Video (Driver App): https://drive.google.com/file/d/1ghwebSchtv4rxntxQVIZpPucUUGPIbPV/view?usp=sharing
+- Product Overview: https://drive.google.com/file/d/1ghwebSchtv4rxntxQVIZpPucUUGPIbPV/view?usp=sharing
+- Live Demo (Driver App): https://drive.google.com/file/d/1IoSNIuKg22W8Di5pjYSnEis0f7ocbWRp/view?usp=sharing
 
 ## System Architecture
 
